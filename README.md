@@ -67,17 +67,17 @@ O sistema foi desenhado sobre o padrão arquitetural MVC modificado (padrão de 
   <tr>
     <td align="center">
       <strong>Interface do Sistema (Index)</strong><br>
-      <img src="sistema/Index.png" width="400px;" alt="Interface do Sistema" />
+      <img src="Sistema/Index.png" width="400px;" alt="Interface do Sistema" />
     </td>
     <td align="center">
       <strong>Filtros em Ação</strong><br>
-      <img src="sistema/Filtros.png" width="400px;" alt="Filtros" />
+      <img src="Sistema/Filtros.png" width="400px;" alt="Filtros" />
     </td>
   </tr>
   <tr>
     <td align="center" colspan="2">
       <strong>Banco de Dados (MySQL)</strong><br>
-      <img src="sistema/BancoDeDados.png" width="800px;" alt="Banco de Dados MySQL" />
+      <img src="Sistema/BancoDeDados.png" width="800px;" alt="Banco de Dados MySQL" />
     </td>
   </tr>
 </table>
