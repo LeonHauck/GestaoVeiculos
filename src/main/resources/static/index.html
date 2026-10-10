@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestão de Veículos</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        .form-group { margin-bottom: 10px; }
+        label { display: inline-block; width: 100px; }
+    </style>
+</head>
+<body>
+    <h1>Gestão de Estoque de Veículos</h1>
+    
+    <h2>Cadastrar Marca</h2>
+    <div class="form-group">
+        <label>Nome:</label>
+        <input type="text" id="marcaNome">
+        <button onclick="salvarMarca()">Salvar Marca</button>
+    </div>
+
+    <h2>Cadastrar Modelo</h2>
+    <div class="form-group">
+        <label>Marca:</label>
+        <select id="modeloMarcaId"></select>
+    </div>
+    <div class="form-group">
+        <label>Nome:</label>
+        <input type="text" id="modeloNome">
+        <button onclick="salvarModelo()">Salvar Modelo</button>
+    </div>
+
+    <h2>Cadastrar Veículo</h2>
+    <div class="form-group">
+        <label>Modelo:</label>
+        <select id="veiculoModeloId"></select>
+    </div>
+    <div class="form-group"><label>Ano:</label><input type="number" id="veiculoAno"></div>
+    <div class="form-group"><label>Cor:</label><input type="text" id="veiculoCor"></div>
+    <div class="form-group"><label>Preço:</label><input type="number" id="veiculoPreco"></div>
+    <div class="form-group"><label>Km:</label><input type="number" id="veiculoKm"></div>
+    <div class="form-group">
+        <label>Status:</label>
+        <select id="veiculoStatus">
+            <option value="DISPONIVEL">Disponível</option>
+            <option value="VENDIDO">Vendido</option>
+            <option value="DESCONTINUADO">Descontinuado</option>
+        </select>
+    </div>
+    <button onclick="salvarVeiculo()">Salvar Veículo</button>
+
+    <h2>Filtro de Veículos</h2>
+    <div class="form-group">
+        <label>Ano:</label>
+        <input type="number" id="filtroAno">
+        <label>Status:</label>
+        <select id="filtroStatus">
+            <option value="">Todos</option>
+            <option value="DISPONIVEL">Disponível</option>
+            <option value="VENDIDO">Vendido</option>
+        </select>
+        <button onclick="carregarVeiculos()">Filtrar</button>
+    </div>
+
+    <h2>Estoque</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th><th>Marca</th><th>Modelo</th><th>Ano</th><th>Cor</th><th>Preço</th><th>Km</th><th>Status</th><th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabelaVeiculos"></tbody>
+    </table>
+
+    <script>
+        const API = 'http://localhost:8080/api';
+
+        async function carregarMarcas() {
+            const res = await fetch(`${API}/marcas`);
+            const marcas = await res.json();
+            const select = document.getElementById('modeloMarcaId');
+            select.innerHTML = marcas.map(m => `<option value="${m.id}">${m.nome}</option>`).join('');
+        }
+
+        async function carregarModelos() {
+            const res = await fetch(`${API}/modelos`);
+            const modelos = await res.json();
+            const select = document.getElementById('veiculoModeloId');
+            select.innerHTML = modelos.map(m => `<option value="${m.id}">${m.marca.nome} - ${m.nome}</option>`).join('');
+        }
+
+        async function carregarVeiculos() {
+            let url = `${API}/veiculos?`;
+            const ano = document.getElementById('filtroAno').value;
+            const status = document.getElementById('filtroStatus').value;
+            if(ano) url += `ano=${ano}&`;
+            if(status) url += `status=${status}&`;
+            
+            const res = await fetch(url);
+            const veiculos = await res.json();
+            const tbody = document.getElementById('tabelaVeiculos');
+            tbody.innerHTML = veiculos.map(v => `
+                <tr>
+                    <td>${v.id}</td>
+                    <td>${v.modelo.marca.nome}</td>
+                    <td>${v.modelo.nome}</td>
+                    <td>${v.anoFabricacao}</td>
+                    <td>${v.cor}</td>
+                    <td>R$ ${v.preco}</td>
+                    <td>${v.quilometragem} km</td>
+                    <td>${v.status}</td>
+                    <td><button onclick="deletarVeiculo(${v.id})">Deletar</button></td>
+                </tr>
+            `).join('');
+        }
+
+        async function salvarMarca() {
+            const nome = document.getElementById('marcaNome').value;
+            await fetch(`${API}/marcas`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({nome})
+            });
+            carregarMarcas();
+        }
+
+        async function salvarModelo() {
+            const nome = document.getElementById('modeloNome').value;
+            const marcaId = document.getElementById('modeloMarcaId').value;
+            await fetch(`${API}/modelos`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({nome, marca: {id: marcaId}})
+            });
+            carregarModelos();
+        }
+
+        async function salvarVeiculo() {
+            const modeloId = document.getElementById('veiculoModeloId').value;
+            const anoFabricacao = document.getElementById('veiculoAno').value;
+            const cor = document.getElementById('veiculoCor').value;
+            const preco = document.getElementById('veiculoPreco').value;
+            const quilometragem = document.getElementById('veiculoKm').value;
+            const status = document.getElementById('veiculoStatus').value;
+            
+            await fetch(`${API}/veiculos`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    modelo: {id: modeloId},
+                    anoFabricacao, cor, preco, quilometragem, status
+                })
+            });
+            carregarVeiculos();
+        }
+
+        async function deletarVeiculo(id) {
+            await fetch(`${API}/veiculos/${id}`, {method: 'DELETE'});
+            carregarVeiculos();
+        }
+
+        window.onload = () => {
+            carregarMarcas();
+            carregarModelos();
+            carregarVeiculos();
+        };
+    </script>
+</body>
+</html>
