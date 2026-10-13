@@ -78,6 +78,9 @@
     <script>
         const API = 'http://localhost:8080/api';
 
+        // Mostra o preço como moeda brasileira (R$ 539.900,00) em vez do número cru
+        const formatarPreco = (valor) => Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
         async function carregarMarcas() {
             const res = await fetch(`${API}/marcas`);
             const marcas = await res.json();
@@ -109,7 +112,7 @@
                     <td>${v.modelo.nome}</td>
                     <td>${v.anoFabricacao}</td>
                     <td>${v.cor}</td>
-                    <td>R$ ${v.preco}</td>
+                    <td>${formatarPreco(v.preco)}</td>
                     <td>${v.quilometragem} km</td>
                     <td>${v.status}</td>
                     <td><button onclick="deletarVeiculo(${v.id})">Deletar</button></td>
